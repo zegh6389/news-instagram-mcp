@@ -13,6 +13,10 @@ on:
         - 'scraping-only'
         - 'generation-only'
 
+permissions:
+  contents: read
+  actions: read
+
 jobs:
   test-automation:
     runs-on: ubuntu-latest
@@ -43,17 +47,11 @@ jobs:
       run: |
         python deploy/test_automation.py
     
-    - name: Post test results
+    - name: Test Results Summary
       if: always()
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const testType = '${{ github.event.inputs.test_type }}';
-          const status = '${{ job.status }}' === 'success' ? '✅ PASSED' : '❌ FAILED';
-          
-          github.rest.repos.createCommitComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            commit_sha: context.sha,
-            body: `🧪 **Test Results**\n\n**Test Type:** ${testType}\n**Status:** ${status}\n\nCheck the workflow logs for detailed results.`
-          })
+      run: |
+        echo "🧪 **Test Results Summary**"
+        echo "**Test Type:** ${{ github.event.inputs.test_type }}"
+        echo "**Status:** ${{ job.status }}"
+        echo "**Timestamp:** $(date)"
+        echo "Check the workflow logs above for detailed results."

@@ -47,26 +47,16 @@ jobs:
         path: logs/
         retention-days: 30
     
-    - name: Comment on commit (success)
+    - name: Automation Success Summary
       if: success()
-      uses: actions/github-script@v6
-      with:
-        script: |
-          github.rest.repos.createCommitComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            commit_sha: context.sha,
-            body: '✅ Daily automation completed successfully! 🎉'
-          })
+      run: |
+        echo "✅ Daily automation completed successfully! 🎉"
+        echo "$(date): News scraping and Instagram posting completed"
+        echo "Check the logs above for detailed results"
     
-    - name: Comment on commit (failure)
+    - name: Automation Failure Summary
       if: failure()
-      uses: actions/github-script@v6
-      with:
-        script: |
-          github.rest.repos.createCommitComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            commit_sha: context.sha,
-            body: '❌ Daily automation failed. Check the logs for details.'
-          })
+      run: |
+        echo "❌ Daily automation failed"
+        echo "$(date): Check the logs above for error details"
+        echo "The system will retry tomorrow at the scheduled time"

@@ -73,19 +73,15 @@ jobs:
         path: logs/
         retention-days: 7
     
-    - name: Post results comment
+    - name: Manual Automation Summary
       if: always()
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const posts = '${{ github.event.inputs.posts_count }}';
-          const template = '${{ github.event.inputs.template_type }}';
-          const publish = '${{ github.event.inputs.immediate_publish }}';
-          const status = '${{ job.status }}' === 'success' ? '✅ Success' : '❌ Failed';
-          
-          github.rest.repos.createCommitComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            commit_sha: context.sha,
-            body: `🎯 Manual automation completed!\n\n**Parameters:**\n- Posts: ${posts}\n- Template: ${template}\n- Immediate Publish: ${publish}\n\n**Status:** ${status}`
-          })
+      run: |
+        echo "🎯 Manual automation completed!"
+        echo ""
+        echo "**Parameters:**"
+        echo "- Posts: ${{ github.event.inputs.posts_count }}"
+        echo "- Template: ${{ github.event.inputs.template_type }}"
+        echo "- Immediate Publish: ${{ github.event.inputs.immediate_publish }}"
+        echo ""
+        echo "**Status:** ${{ job.status }}"
+        echo "**Timestamp:** $(date)"
