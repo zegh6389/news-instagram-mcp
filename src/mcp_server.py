@@ -68,19 +68,31 @@ class NewsInstagramMCPServer:
     
     def _initialize_instagram_publisher(self):
         """Initialize Instagram publisher with demo fallback."""
-        # Try real Instagram publisher first if credentials are available
-        if config.instagram_username and config.instagram_password:
-            try:
-                publisher = InstagramPublisher()
-                if hasattr(publisher, 'client') and publisher.client:
-                    logger.info("✅ Instagram publisher initialized with real credentials")
-                    return publisher
-                else:
-                    logger.warning("⚠️ Instagram credentials available but client failed to initialize")
-            except Exception as e:
-                logger.warning(f"⚠️ Failed to initialize Instagram publisher: {e}")
+        # Debug logging for credentials
+        logger.info(f"Checking Instagram credentials...")
+        logger.info(f"Username configured: {bool(config.instagram_username)}")
+        logger.info(f"Password configured: {bool(config.instagram_password)}")
         
-        # Fallback to demo publisher if real publisher fails or no credentials
+        if config.instagram_username and config.instagram_password:
+            # Check if credentials are placeholder values
+            if (config.instagram_username == 'your_instagram_username' or 
+                config.instagram_password == 'your_instagram_password'):
+                logger.warning("⚠️ Placeholder Instagram credentials detected - using demo mode")
+            else:
+                try:
+                    logger.info("🔄 Attempting to initialize real Instagram publisher...")
+                    publisher = InstagramPublisher()
+                    if hasattr(publisher, 'client') and publisher.client:
+                        logger.info("✅ Instagram publisher initialized with real credentials")
+                        return publisher
+                    else:
+                        logger.warning("⚠️ Instagram credentials available but client failed to initialize")
+                except Exception as e:
+                    logger.warning(f"⚠️ Failed to initialize Instagram publisher: {e}")
+        else:
+            logger.warning("⚠️ No Instagram credentials provided")
+        
+        # Fallback to demo publisher
         if DEMO_PUBLISHER_AVAILABLE:
             logger.info("📱 Using demo Instagram publisher (simulation mode)")
             return DemoInstagramPublisher()
