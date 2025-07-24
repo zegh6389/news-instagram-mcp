@@ -1,0 +1,77 @@
+news_sources:
+  cbc:
+    name: "CBC News"
+    base_url: "https://www.cbc.ca"
+    rss_feeds:
+      - "https://www.cbc.ca/webfeed/rss/rss-topstories"
+      - "https://www.cbc.ca/webfeed/rss/rss-canada"
+      - "https://www.cbc.ca/webfeed/rss/rss-world"
+    selectors:
+      headline: "h1.detailHeadline"
+      content: ".story-content"
+      image: ".lead-media img"
+      author: ".byline-author"
+      date: "time"
+    priority: 1
+    enabled: true
+    
+  globalnews:
+    name: "Global News"
+    base_url: "https://globalnews.ca"
+    rss_feeds:
+      - "https://globalnews.ca/feed/"
+      - "https://globalnews.ca/canada/feed/"
+      - "https://globalnews.ca/world/feed/"
+    selectors:
+      headline: "h1.c-detail__headline"
+      content: ".l-article__body"
+      image: ".c-leadmedia__image img"
+      author: ".c-byline__author"
+      date: ".c-byline__date"
+    priority: 2
+    enabled: true
+    
+  ctv:
+    name: "CTV News"
+    base_url: "https://www.ctvnews.ca"
+    rss_feeds: []
+    selectors:
+      headline: "h1"
+      content: ".articleBody"
+      image: ".leadImage img"
+      author: ".authorName"
+      date: ".timeStamp"
+    priority: 3
+    enabled: false
+
+categories:
+  breaking: 
+    keywords: ["breaking", "urgent", "alert", "developing"]
+    template: "breaking_news.png"
+    hashtags: ["#BreakingNews", "#NewsAlert", "#Canada"]
+    
+  politics:
+    keywords: ["election", "government", "parliament", "minister", "trudeau", "politics"]
+    template: "analysis_post.png"
+    hashtags: ["#CanadianPolitics", "#Government", "#Parliament"]
+    
+  economy:
+    keywords: ["economy", "inflation", "jobs", "market", "business", "finance"]
+    template: "analysis_post.png"
+    hashtags: ["#Economy", "#Business", "#Finance", "#Canada"]
+    
+  weather:
+    keywords: ["weather", "storm", "temperature", "forecast", "climate"]
+    template: "feature_story.png"
+    hashtags: ["#Weather", "#Climate", "#Canada"]
+    
+  health:
+    keywords: ["health", "covid", "pandemic", "medical", "hospital"]
+    template: "feature_story.png"
+    hashtags: ["#Health", "#Healthcare", "#Canada"]
+
+content_filters:
+  min_word_count: 100
+  max_age_hours: 24
+  exclude_keywords: ["advertisement", "sponsored", "promoted"]
+  required_keywords: ["canada", "canadian"]

@@ -1,0 +1,59 @@
+name: Test Automation
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of test to run'
+        required: true
+        default: 'basic'
+        type: choice
+        options:
+        - 'basic'
+        - 'scraping-only'
+        - 'generation-only'
+
+jobs:
+  test-automation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run tests
+      env:
+        INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
+        INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        TEST_TYPE: ${{ github.event.inputs.test_type }}
+        PYTHONPATH: ${{ github.workspace }}
+      run: |
+        python deploy/test_automation.py
+    
+    - name: Post test results
+      if: always()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const testType = '${{ github.event.inputs.test_type }}';
+          const status = '${{ job.status }}' === 'success' ? '✅ PASSED' : '❌ FAILED';
+          
+          github.rest.repos.createCommitComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            commit_sha: context.sha,
+            body: `🧪 **Test Results**\n\n**Test Type:** ${testType}\n**Status:** ${status}\n\nCheck the workflow logs for detailed results.`
+          })
