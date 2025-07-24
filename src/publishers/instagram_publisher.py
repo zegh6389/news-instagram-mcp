@@ -61,20 +61,11 @@ class InstagramPublisher:
             if config.instagram_username and config.instagram_password:
                 logger.info("Performing fresh Instagram login...")
                 
-                # Set consistent device settings to avoid location-based challenges
-                self.client.set_user_agent("Instagram 85.0.0.21.100 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US)")
-                self.client.set_device_settings({
-                    "app_version": "85.0.0.21.100",
-                    "android_version": "24",
-                    "android_release": "7.0",
-                    "dpi": "640dpi",
-                    "resolution": "1440x2560",
-                    "manufacturer": "samsung",
-                    "device": "SM-G930F",
-                    "model": "herolte",
-                    "cpu": "samsungexynos8890",
-                    "version_code": "146536611"
-                })
+                # Set consistent user agent to maintain device consistency
+                try:
+                    self.client.set_user_agent("Instagram 85.0.0.21.100 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US)")
+                except Exception as e:
+                    logger.warning(f"Could not set user agent: {e}")
                 
                 self.client.login(config.instagram_username, config.instagram_password)
                 
