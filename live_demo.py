@@ -6,12 +6,18 @@ Creates and publishes a real Instagram post using the MCP server
 
 import asyncio
 import sys
+import os
 from pathlib import Path
 
 # Add src to path
-sys.path.insert(0, str(Path(__file__).parent / 'src'))
+src_path = str(Path(__file__).parent / 'src')
+if src_path not in sys.path:
+    sys.path.insert(0, src_path)
 
-from src.mcp_server import NewsInstagramMCPServer
+# Change to the script directory to ensure relative imports work
+os.chdir(Path(__file__).parent)
+
+from mcp_server import NewsInstagramMCPServer
 
 async def live_instagram_demo():
     """Run a live demo creating and publishing an Instagram post"""
@@ -36,7 +42,7 @@ async def live_instagram_demo():
         articles = server.db_manager.get_recent_articles(limit=1)
         if articles:
             article = articles[0]
-            print(f'\n📝 Found article: {article.title[:50]}...')
+            print(f'\n📝 Found article: {article.headline[:50]}...')
             
             # Step 4: Generate Instagram post
             print('\n🎨 Step 3: Generating Instagram post...')

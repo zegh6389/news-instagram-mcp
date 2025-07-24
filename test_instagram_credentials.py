@@ -9,9 +9,14 @@ import sys
 from pathlib import Path
 
 # Add src to path
-sys.path.insert(0, str(Path(__file__).parent / 'src'))
+src_path = str(Path(__file__).parent / 'src')
+if src_path not in sys.path:
+    sys.path.insert(0, src_path)
 
-from src.config import config
+# Change to the script directory to ensure relative imports work
+os.chdir(Path(__file__).parent)
+
+from config import config
 
 def test_credentials():
     """Test Instagram credentials configuration."""
