@@ -57,9 +57,6 @@ env/
 ehthumbs.db
 Thumbs.db
 
-# Instagram session
-instagram_session.json
-
 # Temporary files
 tmp/
 temp/
