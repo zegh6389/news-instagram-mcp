@@ -45,10 +45,17 @@ jobs:
         cache: 'pip'
     
     - name: Setup Instagram session from secrets
+      env:
+        INSTAGRAM_SESSION_DATA: ${{ secrets.INSTAGRAM_SESSION_DATA }}
       run: |
-        echo '${{ secrets.INSTAGRAM_SESSION_DATA }}' > instagram_session.json
-        ls -la instagram_session.json
-        echo "✅ Instagram session file created from secrets"
+        python github_session_setup.py
+        if [ -f instagram_session.json ]; then
+          echo "✅ Session file created successfully"
+          ls -la instagram_session.json
+        else
+          echo "❌ Session file creation failed"
+          exit 1
+        fi
     
     - name: Cache Instagram session
       uses: actions/cache@v4
