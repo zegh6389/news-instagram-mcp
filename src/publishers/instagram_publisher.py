@@ -287,8 +287,13 @@ class InstagramPublisher:
             return None
     
     def _upload_post(self, post: InstagramPost, media_path: str) -> Dict[str, Any]:
-        """Upload post to Instagram."""
+        """Upload post to Instagram with enhanced error handling."""
         try:
+            # Validate session before upload
+            if not self._validate_instagram_session():
+                logger.error("Instagram session invalid before upload")
+                return {'success': False, 'error': 'Instagram session invalid'}
+            
             # Rate limiting
             time.sleep(config.instagram_config.get('instagram', {}).get('safety', {}).get('rate_limit_delay', 30))
             
@@ -311,8 +316,52 @@ class InstagramPublisher:
                 return {'success': False, 'error': 'Upload failed - no media returned'}
                 
         except Exception as e:
+            error_msg = str(e).lower()
+            
+            # Handle specific Instagram errors
+            if 'login_required' in error_msg:
+                logger.warning("🔄 Instagram session expired, attempting to reconnect...")
+                
+                # Try to reconnect
+                if self._setup_client():
+                    logger.info("✅ Reconnected to Instagram, retrying upload...")
+                    try:
+                        # Retry upload once
+                        media = self.client.photo_upload(
+                            path=media_path,
+                            caption=post.caption
+                        )
+                        
+                        if media:
+                            instagram_url = f"https://www.instagram.com/p/{media.code}/"
+                            return {
+                                'success': True,
+                                'instagram_id': media.id,
+                                'instagram_url': instagram_url,
+                                'media_code': media.code
+                            }
+                    except Exception as retry_error:
+                        logger.error(f"❌ Retry upload also failed: {retry_error}")
+                        return {'success': False, 'error': f'Upload failed after reconnection: {retry_error}'}
+                else:
+                    return {'success': False, 'error': 'Session expired and reconnection failed'}
+            
             logger.error(f"Error uploading to Instagram: {e}")
             return {'success': False, 'error': str(e)}
+    
+    def _validate_instagram_session(self) -> bool:
+        """Validate if Instagram session is still active."""
+        try:
+            if not self.client:
+                return False
+                
+            # Try to get account info to validate session
+            account_info = self.client.account_info()
+            return account_info is not None and account_info.username
+            
+        except Exception as e:
+            logger.warning(f"Session validation failed: {e}")
+            return False
     
     def get_post_engagement(self, instagram_id: str) -> Dict[str, Any]:
         """Get engagement stats for a published post."""

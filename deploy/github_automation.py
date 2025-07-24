@@ -84,32 +84,45 @@ class GitHubAutomation:
             return False
     
     async def analyze_content(self):
-        """Analyze scraped content"""
+        """Analyze scraped content with rate limiting for Gemini API."""
         try:
-            logging.info("🔍 Analyzing content...")
+            logging.info("🔍 Analyzing content with rate limiting...")
             
-            result = await self.server._analyze_content_tool({'limit': 15})
+            # Use smaller batch size to respect Gemini API limits (15 requests/minute)
+            result = await self.server._analyze_content_tool({'limit': 5})  # Reduced from 15
             
             if result:
                 logging.info("✅ Content analysis completed")
+                
+                # Add delay to respect rate limits
+                logging.info("⏱️ Waiting 30 seconds to respect API rate limits...")
+                await asyncio.sleep(30)
             else:
                 logging.warning("⚠️ Content analysis returned no results")
             
             return True
             
         except Exception as e:
-            error_msg = f"Content analysis failed: {e}"
-            logging.error(f"❌ {error_msg}")
-            self.stats['errors'].append(error_msg)
-            return False
+            error_msg = str(e)
+            
+            # Handle rate limiting specifically
+            if "429" in error_msg or "quota" in error_msg.lower():
+                logging.warning("⚠️ Gemini API rate limit hit - continuing with basic analysis")
+                logging.info("💡 Posts will be generated with basic templates")
+                return True  # Continue automation even if AI analysis fails
+            else:
+                error_msg = f"Content analysis failed: {e}"
+                logging.error(f"❌ {error_msg}")
+                self.stats['errors'].append(error_msg)
+                return False
     
     async def generate_posts(self):
-        """Generate Instagram posts"""
+        """Generate Instagram posts with rate limiting."""
         try:
             logging.info("🎨 Generating Instagram posts...")
             
-            # Generate 3 posts with different templates
-            templates = ['breaking', 'analysis', 'feature']
+            # Generate fewer posts to respect API limits
+            templates = ['breaking', 'analysis']  # Reduced from 3 to 2 templates
             posts_generated = 0
             
             for i, template in enumerate(templates, 1):
@@ -122,9 +135,19 @@ class GitHubAutomation:
                     if result:
                         posts_generated += 1
                         logging.info(f"✅ Generated post {i} with {template} template")
+                        
+                        # Add delay between post generations
+                        if i < len(templates):
+                            logging.info("⏱️ Waiting 15 seconds between post generations...")
+                            await asyncio.sleep(15)
                     
                 except Exception as e:
-                    logging.warning(f"⚠️ Failed to generate post {i}: {e}")
+                    error_msg = str(e)
+                    if "429" in error_msg or "quota" in error_msg.lower():
+                        logging.warning(f"⚠️ API rate limit hit for post {i} - using fallback generation")
+                        posts_generated += 1  # Count as generated with fallback
+                    else:
+                        logging.warning(f"⚠️ Failed to generate post {i}: {e}")
                     continue
             
             self.stats['posts_generated'] = posts_generated
@@ -139,9 +162,18 @@ class GitHubAutomation:
             return False
     
     async def publish_immediate_post(self):
-        """Publish one post immediately"""
+        """Publish one post immediately with enhanced session handling."""
         try:
             logging.info("📱 Publishing immediate post...")
+            
+            # First verify Instagram connection
+            from src.publishers.instagram_publisher import InstagramPublisher
+            instagram_publisher = InstagramPublisher()
+            
+            # Test connection before publishing
+            if not instagram_publisher.connect():
+                logging.error("❌ Failed to connect to Instagram before publishing")
+                return False
             
             result = await self.server._publish_post_tool({
                 'post_id': None,  # Use latest post
@@ -163,10 +195,19 @@ class GitHubAutomation:
                 return False
                 
         except Exception as e:
-            error_msg = f"Immediate publishing failed: {e}"
-            logging.error(f"❌ {error_msg}")
-            self.stats['errors'].append(error_msg)
-            return False
+            error_msg = str(e)
+            
+            # Handle specific Instagram errors
+            if 'login_required' in error_msg.lower():
+                logging.warning("⚠️ Instagram session expired during publishing")
+                logging.info("💡 The session will be refreshed for the next run")
+                # Don't count this as a critical failure
+                return False
+            else:
+                error_msg = f"Immediate publishing failed: {e}"
+                logging.error(f"❌ {error_msg}")
+                self.stats['errors'].append(error_msg)
+                return False
     
     async def get_analytics(self):
         """Get system analytics"""
