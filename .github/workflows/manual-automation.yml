@@ -52,6 +52,16 @@ jobs:
     - name: Create logs directory
       run: mkdir -p logs
     
+    - name: Debug Environment (Check Secrets)
+      env:
+        INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
+        INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        DATABASE_URL: ${{ secrets.DATABASE_URL || 'sqlite:////tmp/news_instagram.db' }}
+        PYTHONPATH: ${{ github.workspace }}
+      run: |
+        python debug_github_env.py
+    
     - name: Run manual automation
       env:
         INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
