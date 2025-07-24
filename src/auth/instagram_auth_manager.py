@@ -208,14 +208,43 @@ class InstagramAuthManager:
             
         except Exception as e:
             logger.error(f"❌ Authentication error: {e}")
-            # If we get location-based blocking, log specific advice
-            if "suspicious" in str(e).lower() or "location" in str(e).lower():
+            
+            # Handle specific Instagram blocking scenarios
+            error_str = str(e).lower()
+            
+            if "forceappupgrade" in error_str or "manual login" in error_str:
+                logger.error("🔒 Instagram App Upgrade/Manual Login Required!")
+                logger.info("💡 IMMEDIATE ACTION REQUIRED:")
+                logger.info("   1. 📱 Open Instagram app on your phone")
+                logger.info("   2. 🔑 Log in manually with your credentials")
+                logger.info("   3. ✅ Complete any security prompts or app updates")
+                logger.info("   4. 🌍 Ensure you're logging in from Milton, Ontario, Canada")
+                logger.info("   5. ⏰ Wait 2-4 hours after manual login")
+                logger.info("   6. 🔄 Then retry the automation")
+                logger.warning("⚠️  Automation is BLOCKED until manual login is completed!")
+                
+            elif "suspicious" in error_str or "location" in error_str:
                 logger.error("🌍 Location-based blocking detected!")
                 logger.info("💡 Recommendations:")
                 logger.info("   1. Wait 24 hours before trying again")
                 logger.info("   2. Log into Instagram manually from this location first")
                 logger.info("   3. Verify your account isn't restricted")
                 logger.info(f"   4. Ensure you're in {self.location_context['city']}, {self.location_context['country']}")
+                
+            elif "blocked" in error_str or "restricted" in error_str:
+                logger.error("🚫 Account may be temporarily blocked!")
+                logger.info("💡 Recovery steps:")
+                logger.info("   1. 📱 Check Instagram app for any notifications")
+                logger.info("   2. 🔍 Review account status in app")
+                logger.info("   3. ⏰ Wait 24-48 hours before retrying")
+                logger.info("   4. 📧 Check email for Instagram security alerts")
+                
+            else:
+                logger.info("💡 General troubleshooting:")
+                logger.info("   1. 📱 Try manual login on Instagram app first")
+                logger.info("   2. 🔍 Check for account restrictions")
+                logger.info("   3. ⏰ Wait and retry later")
+                
             return False
     
     def _handle_challenge(self, challenge_error) -> bool:
@@ -265,6 +294,51 @@ class InstagramAuthManager:
             
         except Exception:
             return False
+    
+    def get_auth_status(self) -> Dict[str, Any]:
+        """Get detailed authentication status."""
+        status = {
+            "authenticated": False,
+            "session_exists": self.session_file.exists(),
+            "device_profile_exists": self.device_file.exists(),
+            "location": f"{self.location_context['city']}, {self.location_context['country']}",
+            "recommendations": []
+        }
+        
+        if not INSTAGRAPI_AVAILABLE:
+            status["error"] = "instagrapi not available"
+            status["recommendations"].append("Install instagrapi: pip install instagrapi")
+            return status
+        
+        if self.session_file.exists():
+            session_age = datetime.now() - datetime.fromtimestamp(self.session_file.stat().st_mtime)
+            status["session_age_days"] = session_age.days
+            status["session_expired"] = session_age > timedelta(days=30)
+        
+        try:
+            status["authenticated"] = self.is_authenticated()
+        except Exception as e:
+            status["error"] = str(e)
+            
+            # Provide specific recommendations based on error
+            error_str = str(e).lower()
+            if "forceappupgrade" in error_str or "manual login" in error_str:
+                status["recommendations"].extend([
+                    "🔒 Manual login required on Instagram app",
+                    "📱 Open Instagram app and log in manually",
+                    "✅ Complete any security prompts",
+                    "⏰ Wait 2-4 hours after manual login"
+                ])
+            elif "suspicious" in error_str or "location" in error_str:
+                status["recommendations"].extend([
+                    "🌍 Location-based blocking detected",
+                    "📱 Log into Instagram app from current location",
+                    "⏰ Wait 24 hours before retrying automation"
+                ])
+            else:
+                status["recommendations"].append("📱 Try manual login on Instagram app first")
+        
+        return status
     
     def logout(self):
         """Logout and clean up session."""
