@@ -1,0 +1,111 @@
+name: 🔐 Canadian Authentication Check
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Check authentication daily at 9 AM ET
+    - cron: '0 13 * * *'  # 9 AM ET = 1 PM UTC
+
+jobs:
+  check-canadian-auth:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: 🇨🇦 Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: 📦 Install Dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: 📁 Setup Directories
+      run: |
+        mkdir -p logs sessions temp
+
+    - name: 🔍 Verify Setup
+      run: |
+        echo "🔍 Verifying Canadian Instagram MCP setup..."
+        python verify_setup.py || true
+
+    - name: 🔐 Test Canadian Authentication
+      env:
+        INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
+        INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
+        DATABASE_URL: sqlite:////tmp/auth_check.db
+      run: |
+        echo "🍁 Testing Canadian Instagram authentication..."
+        echo "📍 Location: Milton, Ontario, Canada"
+        echo "🕐 Time: $(TZ=America/Toronto date '+%Y-%m-%d %H:%M:%S ET')"
+        
+        if python test_canadian_auth.py; then
+          echo "✅ Canadian authentication successful!"
+          echo "🇨🇦 Instagram recognizes Milton, Ontario location"
+          echo "📱 Canadian device profile working correctly"
+        else
+          echo "❌ Canadian authentication failed"
+          echo "🚨 Action required: Check authentication setup"
+          exit 1
+        fi
+
+    - name: 📋 Generate Auth Status Report
+      if: always()
+      run: |
+        TIMESTAMP=$(TZ=America/Toronto date '+%Y-%m-%d %H:%M:%S ET')
+        
+        cat > auth_status_report.md << EOF
+        # 🔐 Canadian Authentication Status Report
+        
+        **Check Date:** $TIMESTAMP
+        **Location:** Milton, Ontario, Canada
+        **Purpose:** Verify Canadian Instagram authentication is working
+        
+        ## 🇨🇦 Canadian Authentication Features
+        
+        - **Device Profile:** Samsung Galaxy S21 (Canadian model SM-G991W)
+        - **Location Context:** Milton, Ontario, Canada
+        - **Timezone:** America/Toronto (Eastern Time)
+        - **Locale:** en_CA (English - Canada)
+        - **User Agent:** Canadian Instagram app signature
+        
+        ## 🔍 What This Check Verifies
+        
+        1. Instagram accepts Canadian location
+        2. No "suspicious login from USA" blocks
+        3. Device profile consistency maintained
+        4. Session persistence working correctly
+        5. Canadian timezone and locale proper
+        
+        ## 📊 Expected Results
+        
+        - ✅ Authentication successful from Canada
+        - ✅ No location-based security blocks
+        - ✅ Session files created/maintained
+        - ✅ Account info retrieved successfully
+        
+        ## 🚨 If Authentication Fails
+        
+        1. Check email for Instagram security notifications
+        2. Verify account isn't restricted or suspended
+        3. Ensure credentials are correct in GitHub secrets
+        4. Consider running setup from actual Canadian location
+        5. Check CANADIAN_AUTH_GUIDE.md for troubleshooting
+        
+        ---
+        
+        **Next Check:** Scheduled daily at 9 AM ET
+        EOF
+
+    - name: 📤 Upload Auth Report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: canadian-auth-status-${{ github.run_number }}
+        path: auth_status_report.md
+        retention-days: 3
