@@ -9,14 +9,19 @@ import sys
 import os
 from pathlib import Path
 
-# Add src to path
-src_path = str(Path(__file__).parent / 'src')
-if src_path not in sys.path:
-    sys.path.insert(0, src_path)
+# Setup paths properly
+project_root = Path(__file__).parent
+src_dir = project_root / 'src'
 
-# Change to the script directory to ensure relative imports work
-os.chdir(Path(__file__).parent)
+# Add to Python path
+sys.path.insert(0, str(project_root))
+sys.path.insert(0, str(src_dir))
 
+# Change to project directory
+os.chdir(project_root)
+
+# Import the MCP server
+sys.path.insert(0, str(src_dir))
 from mcp_server import NewsInstagramMCPServer
 
 async def live_instagram_demo():

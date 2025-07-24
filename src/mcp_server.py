@@ -2,25 +2,28 @@
 
 import asyncio
 import logging
+import sys
+import os
+from pathlib import Path
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timedelta
 import json
 
+# Add src directory to Python path for imports
+src_dir = Path(__file__).parent
+project_root = src_dir.parent
+sys.path.insert(0, str(src_dir))
+sys.path.insert(0, str(project_root))
+
 from mcp.server import Server
 from mcp.types import Resource, Tool, TextContent, ImageContent
 
-from .config import config
-from .database import DatabaseManager, NewsArticle, InstagramPost, ArticleStatus, PostStatus
-from .scrapers import CBCScraper, GlobalNewsScraper, UniversalScraper
-from .processors import ContentAnalyzer, ImageProcessor, CaptionGenerator
-from .publishers import InstagramPublisher, Scheduler
-
-# Import demo publisher for fallback
-try:
-    from .publishers.demo_instagram_publisher import DemoInstagramPublisher
-    DEMO_PUBLISHER_AVAILABLE = True
-except ImportError:
-    DEMO_PUBLISHER_AVAILABLE = False
+# Use absolute imports
+from src.config import config
+from src.database import DatabaseManager, NewsArticle, InstagramPost, ArticleStatus, PostStatus
+from src.scrapers import CBCScraper, GlobalNewsScraper, UniversalScraper
+from src.processors import ContentAnalyzer, ImageProcessor, CaptionGenerator
+from src.publishers import InstagramPublisher, Scheduler
 
 logger = logging.getLogger(__name__)
 
@@ -67,38 +70,32 @@ class NewsInstagramMCPServer:
         return scrapers
     
     def _initialize_instagram_publisher(self):
-        """Initialize Instagram publisher with demo fallback."""
-        # Debug logging for credentials
-        logger.info(f"Checking Instagram credentials...")
-        logger.info(f"Username configured: {bool(config.instagram_username)}")
+        """Initialize Instagram publisher for production."""
+        logger.info("🚀 Initializing Instagram Publisher for Production...")
+        logger.info(f"Username: {config.instagram_username}")
         logger.info(f"Password configured: {bool(config.instagram_password)}")
         
-        if config.instagram_username and config.instagram_password:
-            # Check if credentials are placeholder values
-            if (config.instagram_username == 'your_instagram_username' or 
-                config.instagram_password == 'your_instagram_password'):
-                logger.warning("⚠️ Placeholder Instagram credentials detected - using demo mode")
-            else:
-                try:
-                    logger.info("🔄 Attempting to initialize real Instagram publisher...")
-                    publisher = InstagramPublisher()
-                    if hasattr(publisher, 'client') and publisher.client:
-                        logger.info("✅ Instagram publisher initialized with real credentials")
-                        return publisher
-                    else:
-                        logger.warning("⚠️ Instagram credentials available but client failed to initialize")
-                except Exception as e:
-                    logger.warning(f"⚠️ Failed to initialize Instagram publisher: {e}")
-        else:
-            logger.warning("⚠️ No Instagram credentials provided")
+        if not config.instagram_username or not config.instagram_password:
+            raise ValueError("❌ Instagram credentials not configured. Set INSTAGRAM_USERNAME and INSTAGRAM_PASSWORD environment variables.")
         
-        # Fallback to demo publisher
-        if DEMO_PUBLISHER_AVAILABLE:
-            logger.info("📱 Using demo Instagram publisher (simulation mode)")
-            return DemoInstagramPublisher()
-        else:
-            logger.error("❌ No Instagram publisher available")
-            return None
+        # Check for placeholder values
+        if (config.instagram_username == 'your_instagram_username' or 
+            config.instagram_password == 'your_instagram_password'):
+            raise ValueError("❌ Placeholder Instagram credentials detected. Please set real credentials.")
+        
+        try:
+            logger.info("🔄 Connecting to Instagram...")
+            publisher = InstagramPublisher()
+            
+            if hasattr(publisher, 'client') and publisher.client:
+                logger.info("✅ Instagram publisher connected successfully")
+                return publisher
+            else:
+                raise Exception("Failed to establish Instagram client connection")
+                
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize Instagram publisher: {e}")
+            raise Exception(f"Instagram connection failed: {e}")
     
     def _register_resources(self):
         """Register MCP resources."""

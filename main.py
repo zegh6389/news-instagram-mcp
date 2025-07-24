@@ -5,11 +5,19 @@ import asyncio
 import argparse
 import logging
 import sys
+import os
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).parent / 'src'))
+# Setup paths for imports
+project_root = Path(__file__).parent
+src_dir = project_root / 'src'
+sys.path.insert(0, str(project_root))
+sys.path.insert(0, str(src_dir))
 
+# Change to project directory
+os.chdir(project_root)
+
+# Import with absolute paths
 from src.mcp_server import NewsInstagramMCPServer
 from src.config import config
 
