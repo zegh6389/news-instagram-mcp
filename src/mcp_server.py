@@ -68,22 +68,19 @@ class NewsInstagramMCPServer:
     
     def _initialize_instagram_publisher(self):
         """Initialize Instagram publisher with demo fallback."""
-        # For demo purposes, always use demo publisher
-        # In production, check credentials and try real publisher first
+        # Try real Instagram publisher first if credentials are available
+        if config.instagram_username and config.instagram_password:
+            try:
+                publisher = InstagramPublisher()
+                if hasattr(publisher, 'client') and publisher.client:
+                    logger.info("✅ Instagram publisher initialized with real credentials")
+                    return publisher
+                else:
+                    logger.warning("⚠️ Instagram credentials available but client failed to initialize")
+            except Exception as e:
+                logger.warning(f"⚠️ Failed to initialize Instagram publisher: {e}")
         
-        # Uncomment this section for production with real Instagram credentials:
-        # if config.instagram_username and config.instagram_password:
-        #     try:
-        #         publisher = InstagramPublisher()
-        #         if hasattr(publisher, 'client') and publisher.client:
-        #             logger.info("✅ Instagram publisher initialized with real credentials")
-        #             return publisher
-        #         else:
-        #             logger.warning("⚠️ Instagram credentials available but client failed to initialize")
-        #     except Exception as e:
-        #         logger.warning(f"⚠️ Failed to initialize Instagram publisher: {e}")
-        
-        # Always use demo publisher for this demo environment
+        # Fallback to demo publisher if real publisher fails or no credentials
         if DEMO_PUBLISHER_AVAILABLE:
             logger.info("📱 Using demo Instagram publisher (simulation mode)")
             return DemoInstagramPublisher()
