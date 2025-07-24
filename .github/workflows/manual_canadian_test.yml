@@ -1,0 +1,94 @@
+name: 🇨🇦 Manual Canadian Instagram Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of test to run'
+        required: true
+        default: 'authentication'
+        type: choice
+        options:
+        - authentication
+        - content_generation
+        - full_posting
+      max_posts:
+        description: 'Maximum posts to create/publish'
+        required: false
+        default: '1'
+        type: string
+
+jobs:
+  manual-canadian-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+    - name: 🇨🇦 Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: 📦 Install Dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: 📁 Setup Directories
+      run: |
+        mkdir -p logs sessions temp
+
+    - name: 🔐 Test Canadian Authentication
+      if: ${{ github.event.inputs.test_type == 'authentication' || github.event.inputs.test_type == 'full_posting' }}
+      env:
+        INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
+        INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
+        DATABASE_URL: sqlite:////tmp/test_news.db
+      run: |
+        echo "🍁 Testing Canadian Instagram authentication..."
+        python test_canadian_auth.py
+
+    - name: 🎨 Test Content Generation
+      if: ${{ github.event.inputs.test_type == 'content_generation' || github.event.inputs.test_type == 'full_posting' }}
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        DATABASE_URL: sqlite:////tmp/test_news.db
+      run: |
+        echo "🎨 Testing Canadian content generation..."
+        python -c "print('✅ Content generation test placeholder')"
+
+    - name: 📱 Test Full Posting
+      if: ${{ github.event.inputs.test_type == 'full_posting' }}
+      env:
+        INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
+        INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        DATABASE_URL: sqlite:////tmp/test_news.db
+      run: |
+        echo "📱 Testing full Canadian posting workflow..."
+        echo "Max posts: ${{ github.event.inputs.max_posts }}"
+        python -c "print('✅ Full posting test placeholder')"
+
+    - name: 📋 Generate Test Report
+      if: always()
+      run: |
+        echo "# 🇨🇦 Canadian Instagram Test Report" > test_report.md
+        echo "" >> test_report.md
+        echo "**Test Type:** ${{ github.event.inputs.test_type }}" >> test_report.md
+        echo "**Date:** $(date)" >> test_report.md
+        echo "**Max Posts:** ${{ github.event.inputs.max_posts }}" >> test_report.md
+        echo "" >> test_report.md
+        echo "## Test Results" >> test_report.md
+        echo "Test completed. Check individual steps for detailed results." >> test_report.md
+
+    - name: 📤 Upload Test Report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: canadian-test-report-${{ github.run_number }}
+        path: test_report.md

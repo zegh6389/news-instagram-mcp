@@ -1,0 +1,83 @@
+instagram:
+  posting:
+    max_posts_per_day: 5
+    min_interval_hours: 3
+    preferred_times:
+      - "09:00"
+      - "12:00"
+      - "15:00"
+      - "18:00"
+      - "21:00"
+    
+  content:
+    max_caption_length: 2200
+    hashtag_limit: 30
+    mention_limit: 20
+    
+  media:
+    image_formats: ["jpg", "jpeg", "png"]
+    max_file_size_mb: 8
+    aspect_ratios:
+      square: [1, 1]
+      portrait: [4, 5]
+      landscape: [16, 9]
+    
+  engagement:
+    auto_like: false
+    auto_follow: false
+    auto_comment: false
+    
+  safety:
+    rate_limit_delay: 30
+    max_actions_per_hour: 60
+    use_proxy: false
+    
+hashtags:
+  general: ["#News", "#Canada", "#Breaking", "#Update"]
+  categories:
+    breaking: ["#BreakingNews", "#NewsAlert", "#Urgent"]
+    politics: ["#Politics", "#Government", "#Parliament", "#Election"]
+    economy: ["#Economy", "#Business", "#Finance", "#Markets"]
+    weather: ["#Weather", "#Climate", "#Forecast"]
+    health: ["#Health", "#Healthcare", "#Medical"]
+    sports: ["#Sports", "#Hockey", "#Olympics"]
+    
+captions:
+  templates:
+    breaking: |
+      🚨 BREAKING NEWS 🚨
+      
+      {headline}
+      
+      {summary}
+      
+      📰 Source: {source}
+      🕐 {timestamp}
+      
+      {hashtags}
+    
+    analysis: |
+      📊 NEWS ANALYSIS
+      
+      {headline}
+      
+      {summary}
+      
+      💡 Key Points:
+      {key_points}
+      
+      📰 Source: {source}
+      
+      {hashtags}
+    
+    feature: |
+      📰 {category_emoji} NEWS UPDATE
+      
+      {headline}
+      
+      {summary}
+      
+      📰 Source: {source}
+      🕐 {timestamp}
+      
+      {hashtags}

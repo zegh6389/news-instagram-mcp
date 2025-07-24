@@ -1,0 +1,100 @@
+# Instagram Configuration for Canadian Location (Milton, Ontario)
+# This configuration is optimized for posting from Milton, Canada
+
+instagram:
+  location:
+    city: "Milton"
+    province: "Ontario" 
+    country: "Canada"
+    timezone: "America/Toronto"
+    locale: "en_CA"
+    
+  posting:
+    max_posts_per_day: 5
+    min_interval_hours: 4  # Increased for safer posting
+    preferred_times_et:  # Eastern Time (Toronto timezone)
+      - "08:00"  # 8 AM ET
+      - "12:00"  # 12 PM ET  
+      - "16:00"  # 4 PM ET
+      - "19:00"  # 7 PM ET
+      - "21:00"  # 9 PM ET
+    
+  content:
+    max_caption_length: 2200
+    hashtag_limit: 25  # Reduced for safety
+    mention_limit: 15  # Reduced for safety
+    
+  media:
+    image_formats: ["jpg", "jpeg", "png"]
+    max_file_size_mb: 8
+    aspect_ratios:
+      square: [1, 1]
+      portrait: [4, 5]
+      landscape: [16, 9]
+    
+  engagement:
+    auto_like: false
+    auto_follow: false
+    auto_comment: false
+    
+  safety:
+    rate_limit_delay: 45  # Increased delays for Canadian posting
+    max_actions_per_hour: 30  # Reduced for safety
+    session_timeout_hours: 24
+    use_canadian_device_profile: true
+    
+  device:
+    # Canadian Samsung Galaxy S21 specifications
+    model: "SM-G991W"  # Canadian model
+    manufacturer: "samsung"
+    android_version: "11.0"
+    app_version: "278.0.0.17.119"
+    user_agent_locale: "en_CA"
+
+hashtags:
+  general: ["#News", "#Canada", "#CanadaNews", "#Milton", "#Ontario", "#Breaking", "#Update"]
+  canadian: ["#CanadianNews", "#Ontario", "#GTA", "#TorontoNews", "#CanadaToday"]
+  local: ["#Milton", "#HaltonRegion", "#Oakville", "#Burlington", "#MiltonOntario"]
+  
+  categories:
+    breaking: ["#BreakingNews", "#NewsAlert", "#Urgent", "#CanadaBreaking"]
+    politics: ["#CanadaPolitics", "#Parliament", "#Trudeau", "#Conservative", "#Liberal", "#NDP"]
+    economy: ["#CanadianEconomy", "#TSX", "#BankOfCanada", "#CanadianDollar"]
+    weather: ["#CanadaWeather", "#OntarioWeather", "#TorontoWeather", "#Environment"]
+    health: ["#HealthCanada", "#CanadianHealthcare", "#PublicHealth"]
+    sports: ["#CanadianSports", "#Hockey", "#NHL", "#Raptors", "#BlueJays", "#Olympics"]
+    
+captions:
+  templates:
+    breaking: |
+      🚨 BREAKING NEWS 🇨🇦
+      
+      {headline}
+      
+      📍 {location}
+      🕐 {time_et} ET
+      
+      {summary}
+      
+      #BreakingNews #Canada #News
+      
+    standard: |
+      📰 {headline}
+      
+      {summary}
+      
+      📍 Source: {source}
+      🕐 {time_et} ET
+      
+      #News #Canada {category_hashtags}
+      
+    local: |
+      🏠 LOCAL NEWS - {region}
+      
+      {headline}
+      
+      {summary}
+      
+      📍 {location}
+      
+      #LocalNews #{region} #Ontario #Canada
