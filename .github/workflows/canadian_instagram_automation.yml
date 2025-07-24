@@ -1,0 +1,105 @@
+name: 🍁 Canadian Instagram Automation
+
+on:
+  schedule:
+    # Run every 4 hours during Canadian business hours (ET)
+    - cron: '0 13,17,21,1 * * *'  # 9 AM, 1 PM, 5 PM, 9 PM ET
+  workflow_dispatch:
+    inputs:
+      force_run:
+        description: 'Force run even if recently posted'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  LOCATION_CONTEXT: "Milton, Ontario, Canada"
+  TIMEZONE: "America/Toronto"
+
+jobs:
+  canadian-news-automation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+    - name: 🍁 Setup Canadian Environment
+      run: |
+        echo "🌍 Running from: ${{ env.LOCATION_CONTEXT }}"
+        echo "⏰ Timezone: ${{ env.TIMEZONE }}"
+        echo "🕐 Current time: $(TZ=${{ env.TIMEZONE }} date)"
+    
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+    
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        cache: 'pip'
+    
+    - name: 📦 Install Dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: 🔐 Test Canadian Authentication
+      env:
+        INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
+        INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
+      run: |
+        echo "🔍 Testing Canadian Instagram authentication..."
+        python -c "
+        import sys
+        sys.path.append('src')
+        from auth.instagram_auth_manager import InstagramAuthManager
+        
+        import os
+        username = os.getenv('INSTAGRAM_USERNAME')
+        password = os.getenv('INSTAGRAM_PASSWORD')
+        
+        if not username or not password:
+            print('❌ Instagram credentials not configured')
+            sys.exit(1)
+        
+        auth_manager = InstagramAuthManager(username, password)
+        if auth_manager.authenticate():
+            print('✅ Canadian authentication successful!')
+        else:
+            print('❌ Authentication failed')
+            sys.exit(1)
+        "
+    
+    - name: 📰 Run Canadian News Automation
+      env:
+        INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
+        INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        FORCE_RUN: ${{ github.event.inputs.force_run || false }}
+      run: |
+        echo "🤖 Starting Canadian news automation..."
+        echo "📍 Location: Milton, Ontario, Canada"
+        echo "🕐 Local time: $(TZ=America/Toronto date)"
+        
+        python live_demo.py --canadian-mode
+    
+    - name: 📊 Upload Logs
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: canadian-automation-logs-${{ github.run_number }}
+        path: |
+          *.log
+          logs/
+          sessions/
+        retention-days: 7
+    
+    - name: 🔔 Notify on Failure
+      if: failure()
+      run: |
+        echo "❌ Canadian Instagram automation failed!"
+        echo "🔍 Check the logs for details"
+        echo "💡 Common issues:"
+        echo "   - Instagram authentication from Canada"
+        echo "   - Rate limiting"
+        echo "   - Content policy violations"
+        echo "   - Network connectivity"
