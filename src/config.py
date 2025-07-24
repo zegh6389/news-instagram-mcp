@@ -29,7 +29,7 @@ class Config:
         self.anthropic_api_key = os.getenv('ANTHROPIC_API_KEY')
 
         self.gemini_api_key = os.getenv('GEMINI_API_KEY')
-        self.gemini_model = os.getenv('GEMINI_MODEL', 'gemini-pro')
+        self.gemini_model = os.getenv('GEMINI_MODEL', 'gemini-1.5-flash')
         
         # Database URL with proper fallback for GitHub Actions
         database_url = os.getenv('DATABASE_URL')

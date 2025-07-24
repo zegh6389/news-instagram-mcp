@@ -87,11 +87,14 @@ class NewsInstagramMCPServer:
             logger.info("🔄 Connecting to Instagram...")
             publisher = InstagramPublisher()
             
-            if hasattr(publisher, 'client') and publisher.client:
+            # Explicitly connect with session management
+            connected = publisher.connect()
+            
+            if connected:
                 logger.info("✅ Instagram publisher connected successfully")
                 return publisher
             else:
-                raise Exception("Failed to establish Instagram client connection")
+                raise Exception("Failed to establish Instagram connection")
                 
         except Exception as e:
             logger.error(f"❌ Failed to initialize Instagram publisher: {e}")

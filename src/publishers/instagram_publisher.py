@@ -36,24 +36,51 @@ class InstagramPublisher:
                 logger.error("instagrapi not available. Install with: pip install instagrapi")
                 return False
             
+            # Configure client settings for consistency
+            self.client.set_proxy("")  # No proxy for cleaner IP handling
+            self.client.delay_range = [1, 3]  # Reduce request frequency
+            
             # Load session if exists
             session_path = Path(self.session_file)
             if session_path.exists():
                 try:
+                    logger.info("Loading existing Instagram session...")
                     self.client.load_settings(str(session_path))
-                    self.client.login(config.instagram_username, config.instagram_password)
-                    logger.info("Loaded existing Instagram session")
+                    
+                    # Try to relogin with existing session
+                    self.client.relogin()
+                    logger.info("✅ Successfully reused existing Instagram session")
                     return True
+                    
                 except Exception as e:
-                    logger.warning(f"Failed to load session: {e}")
+                    logger.warning(f"Failed to reuse session, attempting fresh login: {e}")
+                    # Delete corrupted session file
+                    session_path.unlink(missing_ok=True)
             
-            # Fresh login
+            # Fresh login with consistency settings
             if config.instagram_username and config.instagram_password:
+                logger.info("Performing fresh Instagram login...")
+                
+                # Set consistent device settings to avoid location-based challenges
+                self.client.set_user_agent("Instagram 85.0.0.21.100 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US)")
+                self.client.set_device_settings({
+                    "app_version": "85.0.0.21.100",
+                    "android_version": "24",
+                    "android_release": "7.0",
+                    "dpi": "640dpi",
+                    "resolution": "1440x2560",
+                    "manufacturer": "samsung",
+                    "device": "SM-G930F",
+                    "model": "herolte",
+                    "cpu": "samsungexynos8890",
+                    "version_code": "146536611"
+                })
+                
                 self.client.login(config.instagram_username, config.instagram_password)
                 
-                # Save session
+                # Save session for future use
                 self.client.dump_settings(str(session_path))
-                logger.info("Successfully logged into Instagram")
+                logger.info("✅ Successfully logged into Instagram and saved session")
                 return True
             else:
                 logger.error("Instagram credentials not configured")
@@ -61,6 +88,43 @@ class InstagramPublisher:
                 
         except Exception as e:
             logger.error(f"Error setting up Instagram client: {e}")
+            return False
+    
+    def connect(self) -> bool:
+        """Connect to Instagram with session management."""
+        try:
+            if not self.client:
+                logger.error("Instagram client not initialized")
+                return False
+            
+            # Test if already connected
+            try:
+                account_info = self.client.account_info()
+                if account_info:
+                    logger.info(f"✅ Already connected to Instagram as @{account_info.username}")
+                    return True
+            except:
+                # Not connected, need to authenticate
+                pass
+            
+            # Setup client with authentication
+            result = self._setup_client()
+            
+            if result:
+                # Verify connection
+                try:
+                    account_info = self.client.account_info()
+                    logger.info(f"✅ Connected to Instagram as @{account_info.username}")
+                    logger.info(f"👥 Followers: {account_info.follower_count}")
+                    return True
+                except Exception as e:
+                    logger.error(f"Connection verification failed: {e}")
+                    return False
+            
+            return False
+            
+        except Exception as e:
+            logger.error(f"Error connecting to Instagram: {e}")
             return False
     
     def publish_post(self, post_id: int, caption_override: Optional[str] = None) -> Dict[str, Any]:

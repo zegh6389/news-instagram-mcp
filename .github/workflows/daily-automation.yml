@@ -21,6 +21,14 @@ jobs:
         python-version: '3.11'
         cache: 'pip'
     
+    - name: Cache Instagram session
+      uses: actions/cache@v4
+      with:
+        path: instagram_session.json
+        key: instagram-session-${{ secrets.INSTAGRAM_USERNAME }}-v2
+        restore-keys: |
+          instagram-session-${{ secrets.INSTAGRAM_USERNAME }}-
+    
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
