@@ -21,11 +21,17 @@ jobs:
         python-version: '3.11'
         cache: 'pip'
     
+    - name: Setup Instagram session from secrets
+      run: |
+        echo '${{ secrets.INSTAGRAM_SESSION_DATA }}' > instagram_session.json
+        ls -la instagram_session.json
+        echo "✅ Instagram session file created from secrets"
+    
     - name: Cache Instagram session
       uses: actions/cache@v4
       with:
         path: instagram_session.json
-        key: instagram-session-${{ secrets.INSTAGRAM_USERNAME }}-v2
+        key: instagram-session-${{ secrets.INSTAGRAM_USERNAME }}-v3
         restore-keys: |
           instagram-session-${{ secrets.INSTAGRAM_USERNAME }}-
     

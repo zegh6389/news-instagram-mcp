@@ -57,6 +57,9 @@ env/
 ehthumbs.db
 Thumbs.db
 
+# Instagram session (now stored in GitHub Secrets)
+instagram_session.json
+
 # Temporary files
 tmp/
 temp/
