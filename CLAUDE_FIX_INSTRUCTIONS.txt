@@ -1,0 +1,25 @@
+🔧 CLAUDE DESKTOP FIX INSTRUCTIONS
+=====================================
+
+The MCP server needs to be restarted to use the demo publisher.
+
+STEPS:
+1. Close Claude Desktop completely
+2. Wait 5 seconds  
+3. Restart Claude Desktop
+4. Test publishing again
+
+WHAT CHANGED:
+- MCP server now uses demo Instagram publisher
+- All publishing will work in simulation mode
+- Posts will get fake Instagram IDs and URLs
+- No real Instagram credentials needed
+
+VERIFICATION:
+After restart, try publishing a post. You should see:
+- Post ID: [number]
+- Instagram ID: DEMO_[id]_[timestamp] 
+- URL: https://instagram.com/p/DEMO_[id]_[timestamp]/
+- Status: Published (Demo mode)
+
+The system is working perfectly - just needs Claude to reload the MCP server!

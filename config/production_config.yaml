@@ -1,0 +1,106 @@
+# Production Configuration for News Instagram MCP
+# This file contains production-ready settings with real credentials required
+
+system:
+  mode: "production"
+  environment: "production"
+  debug: false
+  testing_mode: false
+  demo_mode: false
+
+credentials:
+  # Real Instagram credentials required
+  instagram:
+    username_env: "INSTAGRAM_USERNAME"
+    password_env: "INSTAGRAM_PASSWORD"
+    validate_on_startup: true
+    require_real_credentials: true
+    
+  # AI API credentials
+  ai:
+    gemini_api_key_env: "GEMINI_API_KEY"
+    require_api_key: true
+
+database:
+  url_env: "DATABASE_URL"
+  default_url: "sqlite:///production_news_instagram.db"
+  enable_migrations: true
+  backup_enabled: true
+
+automation:
+  # GitHub Actions automation settings
+  daily_schedule: "0 6 * * *"  # 6 AM UTC daily
+  max_posts_per_day: 5
+  enable_scheduled_posting: true
+  enable_manual_trigger: true
+
+instagram:
+  # Production Instagram settings
+  posting:
+    enabled: true
+    real_posting_only: true
+    demo_mode: false
+    max_posts_per_day: 5
+    min_interval_hours: 2
+    
+  # Content validation
+  content_validation:
+    require_image: true
+    require_caption: true
+    max_caption_length: 2200
+    require_hashtags: true
+    
+  # Rate limiting
+  rate_limits:
+    posts_per_hour: 2
+    posts_per_day: 5
+    respect_instagram_limits: true
+
+news_sources:
+  # Active news sources for production
+  enabled_sources:
+    - cbc
+    - globalnews
+    - ctv
+  
+  scraping:
+    timeout_seconds: 30
+    max_articles_per_source: 50
+    enable_duplicate_detection: true
+
+content_processing:
+  # AI content analysis
+  ai_analysis:
+    enabled: true
+    sentiment_analysis: true
+    categorization: true
+    importance_scoring: true
+    
+  # Image processing
+  image_processing:
+    enabled: true
+    resize_for_instagram: true
+    optimize_file_size: true
+    max_image_size_mb: 8
+
+logging:
+  # Production logging configuration
+  level: "INFO"
+  enable_file_logging: true
+  enable_console_logging: true
+  log_rotation: true
+  max_log_files: 10
+
+security:
+  # Security settings for production
+  validate_environment_variables: true
+  require_https: true
+  enable_content_moderation: true
+  block_placeholder_credentials: true
+
+monitoring:
+  # Production monitoring
+  enable_analytics: true
+  track_post_performance: true
+  enable_error_reporting: true
+  health_check_interval: 300  # 5 minutes
