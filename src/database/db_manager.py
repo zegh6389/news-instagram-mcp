@@ -17,9 +17,25 @@ class DatabaseManager:
     
     def __init__(self, database_url: Optional[str] = None):
         self.database_url = database_url or config.database_url
-        self.engine = create_engine(self.database_url)
-        self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
-        self.create_tables()
+        
+        # Ensure we have a valid database URL
+        if not self.database_url:
+            self.database_url = 'sqlite:////tmp/news_instagram.db'
+            logger.warning("No database URL provided, using default SQLite database")
+        
+        try:
+            self.engine = create_engine(self.database_url)
+            self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+            self.create_tables()
+            logger.info(f"Database initialized successfully with URL: {self.database_url}")
+        except Exception as e:
+            logger.error(f"Failed to initialize database with URL '{self.database_url}': {e}")
+            # Fallback to a simple SQLite database
+            self.database_url = 'sqlite:////tmp/fallback_news_instagram.db'
+            logger.info(f"Falling back to: {self.database_url}")
+            self.engine = create_engine(self.database_url)
+            self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+            self.create_tables()
     
     def create_tables(self):
         """Create all database tables."""

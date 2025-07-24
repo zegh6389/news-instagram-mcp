@@ -34,7 +34,7 @@ jobs:
         INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
         INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        DATABASE_URL: ${{ secrets.DATABASE_URL || 'sqlite:////tmp/news_instagram.db' }}
         PYTHONPATH: ${{ github.workspace }}
       run: |
         python deploy/github_automation.py

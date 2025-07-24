@@ -31,7 +31,13 @@ class Config:
         self.gemini_api_key = os.getenv('GEMINI_API_KEY')
         self.gemini_model = os.getenv('GEMINI_MODEL', 'gemini-pro')
         
-        self.database_url = os.getenv('DATABASE_URL', 'sqlite:///news_instagram.db')
+        # Database URL with proper fallback for GitHub Actions
+        database_url = os.getenv('DATABASE_URL')
+        if not database_url or database_url == 'sqlite:///tmp/news_instagram.db':
+            # For GitHub Actions or when DATABASE_URL is not properly set
+            self.database_url = 'sqlite:////tmp/news_instagram.db'
+        else:
+            self.database_url = database_url
         
         self.user_agent = os.getenv('USER_AGENT', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
         self.request_delay = int(os.getenv('REQUEST_DELAY', '2'))
